@@ -1,90 +1,78 @@
+# Python program for automating the Chrome Dinosaur Game using OpenCV
+# The program detects obstacles using color detection and automatically makes the dinosaur jump
 
-# Python program for Detection of a  
-# specific color(blue here) using OpenCV with Python 
-import cv2 
-import numpy as np  
-import pyautogui 
-import time 
+import cv2
+import numpy as np
+import pyautogui
+import time
 
-def press_space(): 
-   
-    # releasing the Down Key  
-    pyautogui.keyUp('down')  
-  
-    # pressing Space to overcome Bush 
-    pyautogui.keyDown('space') 
-  
-    # so that Space Key will be recognized easily 
-    time.sleep(0.05)  
-  
-    # printing the "Jump" statement on the 
-    # terminal to see the current output  
-     
-    time.sleep(0.10) 
-  
-    # releasing the Space Key  
-    pyautogui.keyUp('space') 
-  
-    # again pressing the Down Key to keep my Bot always down  
-    pyautogui.keyDown('down') 
-# Webcamera no 0 is used to capture the frames 
+def press_space():
+    '''Makes the dinosaur jump by simulating a space key press'''
+    # Release the down key if it was pressed
+    pyautogui.keyUp('down')
+
+    # Press space to make the dinosaur jump
+    pyautogui.keyDown('space')
+
+    # Small delay to ensure the space key press is registered
+    time.sleep(0.05)
+
+    # Additional delay for jump animation
+    time.sleep(0.10)
+
+    # Release the space key after jump
+    pyautogui.keyUp('space')
+
+    # Press down key again to maintain crouching position
+    pyautogui.keyDown('down')
+
+# Initialize video capture from webcam
 url="https://xyz/video"
 cap = cv2.VideoCapture(0)
-x=0
-cap.set(3,620)
-cap.set(4,480)
+x = 0  # Counter variable for consecutive detections
 
+# Set video capture resolution
+cap.set(3, 620)  # Width
+cap.set(4, 480)  # Height
 
-  
-# This drives the program into an infinite loop. 
-while True:        
-    # Captures the live stream frame-by-frame 
-    _, frame = cap.read()  
-    
+# Main game loop
+while True:
+    # Capture frame-by-frame from the video stream
+    _, frame = cap.read()
 
-    # Converts images from BGR to HSV 
+    # Apply Gaussian blur to reduce noise
     blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV) 
-    
-    
 
-    lower_red = np.array([33,232,230]) 
-    upper_red = np.array([180,255,255]) 
-  
-    # Here we are defining range of bluecolor in HSV 
-    # This creates a mask of blue coloured  
-    # objects found in the frame. 
-    mask = cv2.inRange(hsv, lower_red, upper_red) 
+    # Convert from BGR to HSV color space for better color detection
+    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
-    # The bitwise and of the frame and mask is done so  
-    # that only the blue coloured objects are highlighted  
-    # and stored in res 
-    
-    
-    res = cv2.bitwise_and(frame,frame, mask= mask) 
-    cv2.imshow('frame',frame) 
-    cv2.imshow('mask',mask) 
-    cv2.imshow('res',res) 
+    # Define the HSV color range for obstacle detection
+    lower_red = np.array([33, 232, 230])
+    upper_red = np.array([180, 255, 255])
+
+    # Create a mask for the specified color range
+    mask = cv2.inRange(hsv, lower_red, upper_red)
+
+    # Apply the mask to the original frame
+    res = cv2.bitwise_and(frame, frame, mask=mask)
+
+    # Display the original frame, mask, and result
+    cv2.imshow('frame', frame)
+    cv2.imshow('mask', mask)
+    cv2.imshow('res', res)
+
+    # If obstacle is detected (color in range is found)
     if res.any():
-        x=x+1
+        x = x + 1
         press_space()
-        
-        
-        
     else:
-        x=0
-        
+        x = 0
 
-    # This displays the frame, mask  
-    # and res which we created in 3 separate windows. 
+    # Check for 'ESC' key press to exit
     k = cv2.waitKey(5) & 0xFF
     if k == 27:
         break
-     
-      
-     
-# D   estroys all of the HighGUI wind o ws.
-cv2.destroyAllWindows()    
-        
-# relea se the captured frame q
-cap.release()     
+
+# Clean up resources
+cv2.destroyAllWindows()
+cap.release()
